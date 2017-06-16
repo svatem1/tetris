@@ -45,21 +45,22 @@ function drawGrid(where, grid) {
 }
 
 function canPlace({ piece, rot }, pos) {
-    return piece.data[rot].every(coord => {
-        const xy = vecAdd(pos, coord);
-        return inside(xy) && grid[xy2grid(xy)] === VOID;
-    });
+    return piece.data[rot].map(i => vecAdd(pos, i)).every(j => inside(j) && grid[xy2grid(j)] === VOID);
 }
 
 function place({ piece, rot }, grid, pos) {
-    piece.data[rot].forEach(coord => grid[xy2grid(vecAdd(pos, coord))] = piece.color);
+    return (piece.data[rot].forEach(coord => grid[xy2grid(vecAdd(pos, coord))] = piece.color), grid);
 }
 
 function drawPiece(piece, pos) {
-    const grid = new Uint32Array(new ImageData(10, 22).data.buffer);
-    place(piece, grid, pos);
-    canvas.get("piece").ctx.clearRect(0, 0, 10, 22);
-    drawGrid("piece", grid);
+    drawGrid("piece", place(piece, new Uint32Array(new ImageData(10, 22).data.buffer), pos));
+}
+
+function shrinkGrid(grid) {
+    for (let y = 21, offset = xy2grid([0, y]); y >= 0; y--, offset = xy2grid([0, y]))
+        if (grid.subarray(offset, offset + 10).every(color => color !== VOID))
+            grid.copyWithin(10, 0, offset).subarray(0, 10).fill(VOID);
+    return grid;
 }
 
 function precalcPieces() {
@@ -83,16 +84,6 @@ function rotPiece({ piece, rot }, i) {
     return {
         piece: piece,
         rot: (rot + i) % piece.rots
-    }
-}
-
-function shrinkGrid(grid) {
-    for (let y = 21; y >= 0; y--) {
-        const offset = xy2grid([0, y]);
-        if (grid.subarray(offset, offset + 10).every(color => color !== VOID)) {
-            grid.copyWithin(10, 0, offset);
-            grid.subarray(0, 10).fill(VOID);
-        }
     }
 }
 
@@ -122,9 +113,9 @@ function gameplay() {
 
     document.body.onkeydown = event => {
         if (dirs.has(event.keyCode)) {
-            const newPos = vecAdd(pos, dirs.get(event.keyCode));
-            const newPiece = event.keyCode === 38 ? rotPiece(piece, 1) : piece;
+            const [newPiece, newPos] = [event.keyCode === 38 ? rotPiece(piece, 1) : piece, vecAdd(pos, dirs.get(event.keyCode))];
             if (canPlace(newPiece, newPos)) {
+                canvas.get("piece").ctx.clearRect(0, 0, 10, 22);
                 drawPiece(newPiece, newPos);
                 [piece, pos] = [newPiece, newPos];
             }
@@ -134,14 +125,12 @@ function gameplay() {
 
     const interval = setInterval(() => {
         const newPos = vecAdd(pos, [0, -1]);
+        canvas.get("piece").ctx.clearRect(0, 0, 10, 22);
         if (canPlace(piece, newPos)) {
             drawPiece(piece, newPos);
             pos = newPos;
         } else {
-            canvas.get("piece").ctx.clearRect(0, 0, 10, 22);
-            place(piece, grid, pos);
-            shrinkGrid(grid);
-            drawGrid("grid", grid);
+            drawGrid("grid", shrinkGrid(place(piece, grid, pos)));
             document.body.onkeydown = undefined;
             clearInterval(interval);
             gameplay();
