@@ -4,7 +4,7 @@
 const canvas = new Map(["grid", "piece"].map((id, i) => {
     const cnv = document.createElement("canvas");
     [cnv.width, cnv.height, cnv.zIndex] = [10, 20, i];
-    document.getElementById("wrapper").appendChild(cnv);
+    document.body.appendChild(cnv);
     return [id, {
         canvas: cnv,
         ctx: cnv.getContext("2d")
@@ -96,6 +96,19 @@ function shrinkGrid(grid) {
     }
 }
 
+function resize() {
+    const [x, y] = [window.innerWidth, window.innerHeight];
+    const ratio = y / x;
+    const width = ratio > 2 ? x : Math.floor(y / 2);
+    const height = ratio > 2 ? 2 * x : y;
+
+    [...canvas.values()].forEach(({ canvas }) => {
+        [["width", width], ["height", height]].forEach(([prop, size]) => {
+            canvas.style[prop] = size.toString() + "px";
+        });
+    });
+}
+
 function newGame() {
     grid.fill(VOID);
     speed = 1;
@@ -149,5 +162,7 @@ function gameOver() {
 
 window.onload = function() {
     precalcPieces();
+    window.onresize = resize;
+    resize();
     newGame();
 };
