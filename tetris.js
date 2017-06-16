@@ -117,29 +117,22 @@ function newGame() {
 }
 
 function gameplay() {
-    const dirs = new Map([[37, [-1, 0]], [39, [1, 0]], [40, [0, -1]]]);
-    let piece = getPiece(PIECES[Math.floor(Math.random() * PIECES.length)]);
-    let pos = [4, 20];
-    if (!canPlace(piece, pos)) gameOver();
+    const dirs = new Map([[37, [-1, 0]], [39, [1, 0]], [40, [0, -1]], [38, [0, 0]]]);
+    let [piece, pos] = [getPiece(PIECES[Math.floor(Math.random() * PIECES.length)]), [4, 20]];
 
     document.body.onkeydown = event => {
-        let newPos, newPiece;
         if (dirs.has(event.keyCode)) {
-            newPos = vecAdd(pos, dirs.get(event.keyCode));
-            newPiece = piece;
-        } else if (event.keyCode === 38) {
-            newPos = pos;
-            newPiece = rotPiece(piece, 1);
-        }
-        if (canPlace(newPiece, newPos)) {
-            drawPiece(newPiece, newPos);
-            piece = newPiece;
-            pos = newPos;
+            const newPos = vecAdd(pos, dirs.get(event.keyCode));
+            const newPiece = event.keyCode === 38 ? rotPiece(piece, 1) : piece;
+            if (canPlace(newPiece, newPos)) {
+                drawPiece(newPiece, newPos);
+                [piece, pos] = [newPiece, newPos];
+            }
         }
         event.preventDefault();
     };
 
-    let interval = setInterval(() => {
+    const interval = setInterval(() => {
         const newPos = vecAdd(pos, [0, -1]);
         if (canPlace(piece, newPos)) {
             drawPiece(piece, newPos);
@@ -154,10 +147,11 @@ function gameplay() {
             gameplay();
         }
     }, 300 / speed);
-}
 
-function gameOver() {
-    throw(-1);
+    if (!canPlace(piece, pos))  {
+        clearInterval(interval);
+        newGame();
+    }
 }
 
 window.onload = function() {
