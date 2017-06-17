@@ -57,10 +57,10 @@ function drawPiece(piece, pos) {
 }
 
 function shrinkGrid(grid) {
-    for (let y = 21, offset = xy2grid([0, y]); y >= 0; y--, offset = xy2grid([0, y]))
+    return ([...Array(22).keys()].map(y => xy2grid([0, 21 - y])).forEach(offset => {
         if (grid.subarray(offset, offset + 10).every(color => color !== VOID))
             grid.copyWithin(10, 0, offset).subarray(0, 10).fill(VOID);
-    return grid;
+    }), grid);
 }
 
 function precalcPieces() {
