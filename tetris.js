@@ -56,21 +56,22 @@ function drawPiece(piece, pos) {
     drawGrid("piece", place(piece, new Uint32Array(new ImageData(10, 22).data.buffer), pos));
 }
 
-function shrinkGrid(grid) {
-    return ([...Array(22).keys()].map(y => xy2grid([0, 21 - y])).forEach(offset => {
-        if (grid.subarray(offset, offset + 10).every(color => color !== VOID))
-            grid.copyWithin(10, 0, offset).subarray(0, 10).fill(VOID);
-    }), grid);
+function iterLines(grid, fn, init) {
+    return [...Array(22).keys()].map(y => xy2grid([0, 21 - y])).reduce((res, offset) =>
+        grid.subarray(offset, offset + 10).every(color => color !== VOID) ? fn(res, offset) : res, init);
+}
+
+function shrinkLines(grid) {
+    return iterLines(grid, (r, offset) => grid.copyWithin(10, 0, offset).subarray(0, 10).fill(VOID), grid);
+}
+
+function countLines(grid) {
+    return iterLines(grid, (res,) => res + 1, 0);
 }
 
 function precalcPieces() {
-    PIECES.forEach(piece => {
-        let out = piece.data[0];
-        [...Array(piece.rots - 1).keys()].forEach(() => {
-            out = out.map(([x, y]) => [y, -x]);
-            piece.data.push(out);
-        });
-    })
+    PIECES.forEach(piece => [...Array(piece.rots - 1).keys()].forEach(i =>
+        piece.data.push(piece.data[i].map(([x, y]) => [y, -x]))));
 }
 
 function getPiece(piece) {
@@ -131,7 +132,9 @@ function gameplay() {
             drawPiece(piece, newPos);
             pos = newPos;
         } else {
-            drawGrid("grid", shrinkGrid(place(piece, grid, pos)));
+            console.log(countLines(place(piece, grid, pos)));
+            drawGrid("grid", shrinkLines(grid));
+            // drawGrid("grid", shrinkLines(place(piece, grid, pos)));
             document.body.onkeydown = undefined;
             clearInterval(interval);
             gameplay();
