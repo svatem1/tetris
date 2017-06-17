@@ -13,20 +13,20 @@ const canvas = new Map(["grid", "piece"].map((id, i) => {
 
 const rgba = (r, g, b, a) => (r | g << 8 | b << 16 | a << 24) >>> 0; // >>> 0 for int/uint conversion
 
-const VOID = rgba(0, 0, 0, 255); // background color
+const VOID = rgba(35, 35, 35, 255); // background color
 
 const PIECES = [
 // http://tetris.wikia.com/wiki/Tetromino
 // pcs will be initially positioned in top hidden 10x2 as pictured ^
 // pivot in 10x2 is [4, 0] = [4, 20], zero based, growing up right
 // deltas in pcs.data are from ^
-    { data: [[[-1, 0], [0, 0], [1, 0], [2, 0]]], rots: 2, color: rgba(128, 255, 255, 255) }, // I
-    { data: [[[0, 0], [0, 1], [1, 1], [1, 0]]], rots: 1, color: rgba(255, 255, 0, 255) }, // O
-    { data: [[[-1, 0], [0, 0], [0, 1], [1, 0]]], rots: 4, color: rgba(255, 0, 255, 255) }, // T
-    { data: [[[-1, 0], [0, 0], [0, 1], [1, 1]]], rots: 2, color: rgba(0, 255, 0, 255) }, // S
-    { data: [[[-1, 1], [0, 1], [0, 0], [1, 0]]], rots: 2, color: rgba(255, 0, 0, 255) }, // Z
-    { data: [[[-1, 1], [-1, 0], [0, 0], [1, 0]]], rots: 4, color: rgba(0, 0, 255, 255) }, // J
-    { data: [[[-1, 0], [0, 0], [1, 0], [1, 1]]], rots: 4, color: rgba(255, 255, 128, 255) }  // L
+    { data: [[[-1, 0], [0, 0], [1, 0], [2, 0]]], rots: 2, color: rgba(255, 0, 77, 255) }, // I
+    { data: [[[0, 0], [0, 1], [1, 1], [1, 0]]], rots: 1, color: rgba(255, 163, 0, 255) }, // O
+    { data: [[[-1, 0], [0, 0], [0, 1], [1, 0]]], rots: 4, color: rgba(255, 236, 39, 255) }, // T
+    { data: [[[-1, 0], [0, 0], [0, 1], [1, 1]]], rots: 2, color: rgba(0, 228, 54, 255) }, // S
+    { data: [[[-1, 1], [0, 1], [0, 0], [1, 0]]], rots: 2, color: rgba(41, 173, 255, 255) }, // Z
+    { data: [[[-1, 1], [-1, 0], [0, 0], [1, 0]]], rots: 4, color: rgba(255, 119, 168, 255) }, // J
+    { data: [[[-1, 0], [0, 0], [1, 0], [1, 1]]], rots: 4, color: rgba(255, 204, 170, 255) }  // L
 ];
 
 const grid = (new Uint32Array(10 * 22)).fill(VOID);
@@ -80,18 +80,19 @@ function getPiece(piece) {
     }
 }
 
-function rotPiece({ piece, rot }, i) {
+function rotPiece({ piece, rot }) {
     return {
         piece: piece,
-        rot: (rot + i) % piece.rots
+        // rot: (rot + piece.rots - 1) % piece.rots // CCW
+        rot: (rot + 1) % piece.rots // CW
     }
 }
 
-function resize() {
+function resize(ar) {
     const [x, y] = [window.innerWidth, window.innerHeight];
     const ratio = y / x;
-    const width = ratio > 2 ? x : Math.floor(y / 2);
-    const height = ratio > 2 ? 2 * x : y;
+    const width = ratio > ar ? x : Math.floor(y / ar);
+    const height = ratio > ar ? Math.floor(ar * x) : y;
 
     [...canvas.values()].forEach(({ canvas }) => {
         [["width", width], ["height", height]].forEach(([prop, size]) => {
@@ -113,7 +114,7 @@ function gameplay() {
 
     document.body.onkeydown = event => {
         if (dirs.has(event.keyCode)) {
-            const [newPiece, newPos] = [event.keyCode === 38 ? rotPiece(piece, 1) : piece, vecAdd(pos, dirs.get(event.keyCode))];
+            const [newPiece, newPos] = [event.keyCode === 38 ? rotPiece(piece) : piece, vecAdd(pos, dirs.get(event.keyCode))];
             if (canPlace(newPiece, newPos)) {
                 canvas.get("piece").ctx.clearRect(0, 0, 10, 22);
                 drawPiece(newPiece, newPos);
@@ -145,7 +146,7 @@ function gameplay() {
 
 window.onload = function() {
     precalcPieces();
-    window.onresize = resize;
-    resize();
+    window.onresize = () => resize(2);
+    resize(2);
     newGame();
 };
