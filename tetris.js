@@ -31,14 +31,12 @@ const PIECES = [
 
 const grid = (new Uint32Array(10 * 22)).fill(VOID);
 
-let speed = 1; // lines/s, ranging from 1 to 10
 
 const xy2grid = ([x, y]) => (21 - y) * 10 + x;
 
 const inside = ([x, y]) => x >= 0 && x <= 9 && y >= 0 && y <= 21;
 
 const vecAdd = (a, b) => a.map((el, i) => el + b[i]);
-
 
 function drawGrid(where, grid) {
     canvas.get(where).ctx.putImageData(new ImageData(new Uint8ClampedArray(grid.buffer, 10 * 2 * 4, 10 * 20 * 4), 10, 20), 0, 0);
@@ -104,14 +102,17 @@ function resize(ar) {
 
 function newGame() {
     grid.fill(VOID);
-    speed = 1;
     drawGrid("grid", grid);
-    gameplay();
+    gameplay(0); // TODO SETTIMEOUT THIS TO AVOID RECURSION
 }
 
-function gameplay() {
+function gameplay(shrinkedLines) {
     const dirs = new Map([[37, [-1, 0]], [39, [1, 0]], [40, [0, -1]], [38, [0, 0]]]);
     let [piece, pos] = [getPiece(PIECES[Math.floor(Math.random() * PIECES.length)]), [4, 20]];
+
+    if (!canPlace(piece, pos))  {
+        newGame(); // TODO SETTIMEOUT THIS TO AVOID RECURSION
+    }
 
     document.body.onkeydown = event => {
         if (dirs.has(event.keyCode)) {
@@ -125,26 +126,20 @@ function gameplay() {
         event.preventDefault();
     };
 
-    const interval = setInterval(() => {
+    const interval = setInterval(() => { // TODO SETTIMEOUT INSTEAD
         const newPos = vecAdd(pos, [0, -1]);
         canvas.get("piece").ctx.clearRect(0, 0, 10, 22);
         if (canPlace(piece, newPos)) {
             drawPiece(piece, newPos);
             pos = newPos;
         } else {
-            console.log(countLines(place(piece, grid, pos)));
+            const lines = countLines(place(piece, grid, pos));
             drawGrid("grid", shrinkLines(grid));
-            // drawGrid("grid", shrinkLines(place(piece, grid, pos)));
             document.body.onkeydown = undefined;
             clearInterval(interval);
-            gameplay();
+            gameplay(shrinkedLines + lines); // TODO SETTIMEOUT THIS TO AVOID RECURSION
         }
-    }, 300 / speed);
-
-    if (!canPlace(piece, pos))  {
-        clearInterval(interval);
-        newGame();
-    }
+    }, shrinkedLines > 100 ? 80 : 80000 / (9 * shrinkedLines + 100));
 }
 
 window.onload = function() {
