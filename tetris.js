@@ -1,16 +1,5 @@
 // visible grid is 10x20, grid is 10x22, 2 hidden lines for initial piece position
 
-// one canvas for grid one canvas for falling piece
-const canvas = new Map(["grid", "piece"].map((id, i) => {
-    const cnv = document.createElement("canvas");
-    [cnv.width, cnv.height, cnv.zIndex] = [10, 20, i];
-    document.body.appendChild(cnv);
-    return [id, {
-        canvas: cnv,
-        ctx: cnv.getContext("2d")
-    }]
-}));
-
 const rgba = (r, g, b, a) => (r | g << 8 | b << 16 | a << 24) >>> 0; // >>> 0 for int/uint conversion
 
 const VOID = rgba(35, 35, 35, 255); // background color
@@ -90,14 +79,10 @@ function rotPiece({ piece, rot }) {
 function resize(ar) {
     const [x, y] = [window.innerWidth, window.innerHeight];
     const ratio = y / x;
-    const width = ratio > ar ? x : Math.floor(y / ar);
-    const height = ratio > ar ? Math.floor(ar * x) : y;
-
-    [...canvas.values()].forEach(({ canvas }) => {
-        [["width", width], ["height", height]].forEach(([prop, size]) => {
-            canvas.style[prop] = size.toString() + "px";
-        });
-    });
+    const w = ratio > ar ? x : Math.floor(y / ar);
+    const h = ratio > ar ? Math.floor(ar * x) : y;
+    const wrapper = document.getElementById("wrapper");
+    [["width", w], ["height", h]].forEach(([prop, size]) => wrapper.style[prop] = size.toString() + "px");
 }
 
 function newGame() {
@@ -146,6 +131,16 @@ function gameplay(shrinkedLines) {
 }
 
 window.onload = function() {
+    canvas = new Map(["grid", "piece"].map((id, i) => { // note: this creates global variable and it's desirable
+        const cnv = document.createElement("canvas");
+        [cnv.width, cnv.height, cnv.zIndex] = [10, 20, i];
+        document.getElementById("wrapper").appendChild(cnv);
+        return [id, {
+            canvas: cnv,
+            ctx: cnv.getContext("2d")
+        }]
+    }));
+
     precalcPieces();
     window.onresize = () => resize(2);
     resize(2);
