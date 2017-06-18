@@ -103,18 +103,14 @@ function resize(ar) {
 function newGame() {
     grid.fill(VOID);
     drawGrid("grid", grid);
-    gameplay(0); // TODO SETTIMEOUT THIS TO AVOID RECURSION
+    gameplay(0);
 }
 
 function gameplay(shrinkedLines) {
     const dirs = new Map([[37, [-1, 0]], [39, [1, 0]], [40, [0, -1]], [38, [0, 0]]]);
     let [piece, pos] = [getPiece(PIECES[Math.floor(Math.random() * PIECES.length)]), [4, 20]];
 
-    if (!canPlace(piece, pos))  {
-        newGame(); // TODO SETTIMEOUT THIS TO AVOID RECURSION
-    }
-
-    document.body.onkeydown = event => {
+    const controls = event => {
         if (dirs.has(event.keyCode)) {
             const [newPiece, newPos] = [event.keyCode === 38 ? rotPiece(piece) : piece, vecAdd(pos, dirs.get(event.keyCode))];
             if (canPlace(newPiece, newPos)) {
@@ -126,20 +122,27 @@ function gameplay(shrinkedLines) {
         event.preventDefault();
     };
 
-    const interval = setInterval(() => { // TODO SETTIMEOUT INSTEAD
+    const down = () => {
         const newPos = vecAdd(pos, [0, -1]);
         canvas.get("piece").ctx.clearRect(0, 0, 10, 22);
         if (canPlace(piece, newPos)) {
             drawPiece(piece, newPos);
             pos = newPos;
+            setTimeout(down, shrinkedLines > 100 ? 80 : 80000 / (9 * shrinkedLines + 100));
         } else {
             const lines = countLines(place(piece, grid, pos));
             drawGrid("grid", shrinkLines(grid));
             document.body.onkeydown = undefined;
-            clearInterval(interval);
-            gameplay(shrinkedLines + lines); // TODO SETTIMEOUT THIS TO AVOID RECURSION
+            setTimeout(() => gameplay(shrinkedLines + lines), 0); // to avoid recursion
         }
-    }, shrinkedLines > 100 ? 80 : 80000 / (9 * shrinkedLines + 100));
+    };
+
+    if (!canPlace(piece, pos))
+        newGame();
+    else {
+        setTimeout(down, 0);
+        document.body.onkeydown = controls;
+    }
 }
 
 window.onload = function() {
