@@ -97,12 +97,18 @@ function gameplay(shrinkedLines) {
 
     const controls = event => {
         if (dirs.has(event.keyCode)) {
-            const [newPiece, newPos] = [event.keyCode === 38 ? rotPiece(piece) : piece, vecAdd(pos, dirs.get(event.keyCode))];
-            if (canPlace(newPiece, newPos)) {
-                canvas.get("piece").ctx.clearRect(0, 0, 10, 22);
-                drawPiece(newPiece, newPos);
-                [piece, pos] = [newPiece, newPos];
-            }
+            const newPiece = event.keyCode === 38 ? rotPiece(piece) : piece;
+            const kicks = (newPiece.rot & 1) ? [[0, 0], [0, 1], [0, 2]] : [[0, 0], [-1, 0], [1, 0], [-2, 0], [2, 0]];
+            kicks.some(coord => {
+                const newPos = vecAdd(coord, vecAdd(pos, dirs.get(event.keyCode)));
+                if (canPlace(newPiece, newPos)) {
+                    canvas.get("piece").ctx.clearRect(0, 0, 10, 22);
+                    drawPiece(newPiece, newPos);
+                    [piece, pos] = [newPiece, newPos];
+                    return true;
+                }
+                if (event.keyCode !== 38) return true;
+            });
         }
         event.preventDefault();
     };
