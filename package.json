@@ -1,0 +1,24 @@
+{
+  "name": "tetris",
+  "version": "1.0.0",
+  "description": "simple short tetris implementation using terse oneliners",
+  "main": "tetris.js",
+  "scripts": {
+    "lint": "eslint",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@bitbucket.org/svatem1/tetris.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://bitbucket.org/svatem1/tetris/issues"
+  },
+  "homepage": "https://bitbucket.org/svatem1/tetris#readme",
+  "devDependencies": {
+    "eslint": "^8.23.0"
+  }
+}

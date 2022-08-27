@@ -1,13 +1,14 @@
 <!doctype html>
 <html>
-<head>
-    <meta charset="utf-8">
-    <title>simple Tetris implementation</title>
-    <link rel="stylesheet" type="text/css" href="tetris.css" />
-</head>
-
-<body>
-<script src="tetris.js"></script>
-<div id="wrapper"></div>
-</body>
+    <head>
+        <meta charset="utf-8">
+        <title>simple Tetris implementation</title>
+        <link rel="stylesheet" type="text/css" href="tetris.css" />
+    </head>
+    <body>
+        <canvas id="grid" width="10" height="20" style="z-index: 0;"></canvas>
+        <canvas id="piece" width="10" height="20" style="z-index: 1"></canvas>
+        <!-- last, so that dom is already constructed -->
+        <script src="tetris.js"></script>
+    </body>
 </html>
