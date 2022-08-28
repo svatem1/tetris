@@ -21,8 +21,8 @@ const PIECES = [
     { data: [[[-1, 1], [0, 1], [0, 0], [1, 0]]], rots: 2, color: rgba(41, 173, 255, 255) }, // Z
     { data: [[[-1, 1], [-1, 0], [0, 0], [1, 0]]], rots: 4, color: rgba(255, 119, 168, 255) }, // J
     { data: [[[-1, 0], [0, 0], [1, 0], [1, 1]]], rots: 4, color: rgba(255, 204, 170, 255) }  // L
-// precalculates look-up table with rotated pieces
-].forEach(piece => [...Array(piece.rots - 1).keys()].forEach(i => piece.data.push(piece.data[i].map(([x, y]) => [y, -x]))));
+    // precalculates look-up table with rotated pieces, generates 1 more rotation than needed, but rotPiece takes care of it via %
+].map(p => ({ ...p, data: [...Array(p.rots - 1).keys()].reduce((acc, i) => [...acc, acc[i].map(([x, y]) => [y, -x])], p.data) }));
 
 
 const xy2grid = ([x, y]) => (21 - y) * 10 + x;
