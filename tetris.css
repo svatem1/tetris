@@ -23,10 +23,45 @@ body {
     max-height: 100%;
 }
 
-body canvas {
+body > * {
     position: absolute;
     width: 100%;
     height: 100%;
+}
+
+body > canvas {
     image-rendering: -moz-crisp-edges;
     image-rendering: pixelated;
+}
+
+body > div {
+    background: repeating-linear-gradient(
+        45deg,
+        rgba(0, 0, 0, 0.1),
+        rgba(0, 0, 0, 0.1) 1.52%,
+        rgba(0, 0, 0, 0.2) 1.52%,
+        rgba(0, 0, 0, 0.2) 3.04%
+    ),
+    repeating-linear-gradient(
+        75deg,
+        rgba(0, 0, 0, 0.1),
+        rgba(0, 0, 0, 0.1) 1.52%,
+        rgba(0, 0, 0, 0.2) 1.52%,
+        rgba(0, 0, 0, 0.2) 3.04%
+    ),
+    repeating-linear-gradient(
+        to right,
+        rgba(0, 0, 0, 0.7),
+        rgba(0, 0, 0, 0.7) 1%,
+        rgba(0, 0, 0, 0.0) 1%,
+        rgba(0, 0, 0, 0.0) 10%
+    ),
+    /* aspect ratio is 1:2, hence this is half */
+    repeating-linear-gradient(
+        to bottom,
+        rgba(0, 0, 0, 0.7),
+        rgba(0, 0, 0, 0.7) 0.5%,
+        rgba(0, 0, 0, 0.0) 0.5%,
+        rgba(0, 0, 0, 0.0) 5%
+    );
 }
