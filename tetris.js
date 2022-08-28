@@ -89,7 +89,7 @@ const rotPieceCW = ({ piece, rot }) => ({ piece: piece, rot: (rot + 1) % piece.r
         }
     };
 
-    if (!canPlace(piece, pos)) {
+    if (!canPlace(piece, pos)) { // new game, for 1st game, these are already initialized
         GRID.fill(VOID);
         drawGrid("grid", GRID);
         gameplay(0);
